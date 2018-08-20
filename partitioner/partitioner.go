@@ -70,6 +70,26 @@ func New(c *Config) Partitioner {
 		}
 		go p.cleanup()
 		return p
+	case "KafkaDatePartitioner":
+		p := new(KafkaDatePartitioner)
+		p.subscriptions = make(map[string]*buffer.Buffer)
+		p.defaultBufferConfig = c.DefaultBufferConfig
+		p.pathBaseFolder = c.BaseFolder
+		p.pathTopicNamePrefix = c.TopicNamePrefix
+		go p.cleanup()
+		return p
+	case "FirehosePartitioner":
+		p := new(FirehosePartitioner)
+		p.subscriptions = make(map[string]*buffer.Buffer)
+		p.defaultBufferConfig = c.DefaultBufferConfig
+		p.pathBaseFolder = c.BaseFolder
+		p.pathTopicNamePrefix = c.TopicNamePrefix
+		p.fieldName = c.FieldKeyName
+		if p.fieldName == "" {
+			glog.Fatal("FirehosePartitioner requires partitioner-key flag")
+		}
+		go p.cleanup()
+		return p
 	default:
 		glog.Fatalf("unknown partitioner key %s", c.Type)
 	}
